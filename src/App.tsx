@@ -31,7 +31,6 @@ const App: React.FC = () => {
     }
   }, []);
   
-
   // Khi người dùng click vào ảnh, tạo một pin tạm
   const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
     const img = e.currentTarget;

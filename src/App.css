@@ -1,5 +1,5 @@
 /* Reset CSS */
-* {
+ * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -80,7 +80,7 @@
 
 .comment-panel ul {
   list-style: none;
-  max-height: 300px;
+  max-height: 700px;
   overflow-y: auto;
   padding-right: 5px;
 }
@@ -152,9 +152,24 @@
     border-left: none;
     border-top: 1px solid #ddd;
   }
+
+  .comment-panel ul {
+    max-height: 300px;
+  }
+} 
+
+/* Highlight pin đang active */
+.pin-active {
+  background-color: #ffc107 !important;
+  box-shadow: 0 0 10px rgba(255, 193, 7, 0.8);
 }
 
-
+/* Highlight comment đang active */
+.active-comment {
+  background-color: #d1ecf1;
+  border-left: 4px solid #007bff;
+  padding-left: 10px;
+}
 
 /* .app-container {
   display: flex;

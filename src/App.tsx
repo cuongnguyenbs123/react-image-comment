@@ -174,7 +174,7 @@ const App: React.FC = () => {
               onClick={() => handlePinClick(c.id)}
             >
               <p>
-                <strong>Vị trí:</strong> x={Math.round(c.x)}, y=
+                <strong>Vị trí:</strong> x={Math.round(c.x)},
                 {Math.round(c.y)}
               </p>
               <p>{c.text}</p>
@@ -201,3 +201,111 @@ const App: React.FC = () => {
 };
 
 export default App;
+
+
+// import React, { useState, useRef } from "react";
+// import "./App.css";
+
+// interface Selection {
+//   x: number;
+//   y: number;
+//   width: number;
+//   height: number;
+// }
+
+// const ImageSelection: React.FC = () => {
+//   const [selection, setSelection] = useState<Selection | null>(null);
+//   const [isDragging, setIsDragging] = useState(false);
+//   const [resizeCorner, setResizeCorner] = useState<"top-left" | "bottom-right" | null>(null);
+//   const imageRef = useRef<HTMLDivElement | null>(null);
+
+//   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+//     if (!imageRef.current) return;
+
+//     const rect = imageRef.current.getBoundingClientRect();
+//     const x = e.clientX - rect.left;
+//     const y = e.clientY - rect.top;
+
+//     setSelection({ x, y, width: 0, height: 0 });
+//     setIsDragging(true);
+//   };
+
+//   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+//     if (!isDragging || !selection || !imageRef.current) return;
+
+//     const rect = imageRef.current.getBoundingClientRect();
+//     const width = e.clientX - rect.left - selection.x;
+//     const height = e.clientY - rect.top - selection.y;
+
+//     setSelection((prev) => (prev ? { ...prev, width, height } : null));
+//   };
+
+//   const handleMouseUp = () => {
+//     setIsDragging(false);
+//   };
+
+//   // Xử lý kéo resize từ các góc
+//   const handleResizeMouseDown = (corner: "top-left" | "bottom-right", e: React.MouseEvent<HTMLDivElement>) => {
+//     e.stopPropagation();
+//     setResizeCorner(corner);
+//   };
+
+//   const handleResizeMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+//     if (!resizeCorner || !selection || !imageRef.current) return;
+
+//     const rect = imageRef.current.getBoundingClientRect();
+//     const x = e.clientX - rect.left;
+//     const y = e.clientY - rect.top;
+
+//     if (resizeCorner === "top-left") {
+//       setSelection({
+//         x: x,
+//         y: y,
+//         width: selection.width + (selection.x - x),
+//         height: selection.height + (selection.y - y),
+//       });
+//     } else if (resizeCorner === "bottom-right") {
+//       setSelection({ ...selection, width: x - selection.x, height: y - selection.y });
+//     }
+//   };
+
+//   const handleResizeMouseUp = () => {
+//     setResizeCorner(null);
+//   };
+
+//   return (
+//     <div
+//       className="image-container"
+//       ref={imageRef}
+//       onMouseDown={handleMouseDown}
+//       onMouseMove={resizeCorner ? handleResizeMouseMove : handleMouseMove}
+//       onMouseUp={resizeCorner ? handleResizeMouseUp : handleMouseUp}
+//     >
+//       <img src="https://picsum.photos/800/500" alt="Example" className="image" />
+//       {selection && (
+//         <div
+//           className="selection-box"
+//           style={{
+//             left: `${selection.x}px`,
+//             top: `${selection.y}px`,
+//             width: `${selection.width}px`,
+//             height: `${selection.height}px`,
+//           }}
+//         >
+//           {/* Điểm kéo trên góc trái */}
+//           <div
+//             className="resize-handle top-left"
+//             onMouseDown={(e) => handleResizeMouseDown("top-left", e)}
+//           />
+//           {/* Điểm kéo dưới góc phải */}
+//           <div
+//             className="resize-handle bottom-right"
+//             onMouseDown={(e) => handleResizeMouseDown("bottom-right", e)}
+//           />
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default ImageSelection;

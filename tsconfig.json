@@ -3,5 +3,12 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ]
+  ],
+  "compilerOptions":{
+    "paths": {
+      "@/*": ["./src/*"],
+      "~/*": ["./public/*"],
+      "react": [ "./node_modules/@types/react" ]
+    }
+  }
 }

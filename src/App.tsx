@@ -219,3 +219,79 @@ const App: React.FC = () => {
 };
 
 export default App;
+
+
+// import React, { useState } from "react";
+// import ImageCanvas from "./components/ImageCanvas";
+// import CommentBox from "./components/CommentBox";
+// import "./App.css";
+// interface Comment {
+//   id: number;
+//   x: number;
+//   y: number;
+//   width?: number;
+//   height?: number;
+//   text: string;
+//   type: "pin" | "selection";
+// }
+
+// const App: React.FC = () => {
+//   const [comments, setComments] = useState<Comment[]>([]);
+//   const [tempComment, setTempComment] = useState<Omit<Comment, "id" | "text"> | null>(null);
+//   const [commentText, setCommentText] = useState<string>("");
+//   const [activeCommentId, setActiveCommentId] = useState<number | null>(null);
+
+//   // Hàm thêm comment (cho cả pin và vùng chọn)
+//   const handleAddComment = () => {
+//     if (!tempComment || !commentText.trim()) return;
+
+//     const newComment: Comment = {
+//       id: Date.now(),
+//       ...tempComment,
+//       text: commentText,
+//     };
+
+//     setComments([...comments, newComment]);
+//     setTempComment(null);
+//     setCommentText("");
+//   };
+
+//   // Hàm xoá comment
+//   const handleDeleteComment = (id: number) => {
+//     setComments(comments.filter((c) => c.id !== id));
+//   };
+
+//   // Hàm thêm comment từ ImageCanvas (pin hoặc vùng chọn)
+//   const handleAddCommentFromCanvas = (type: "pin" | "selection", x: number, y: number, width?: number, height?: number) => {
+//     setTempComment({ x, y, width, height, type });
+//     setCommentText("");
+//   };
+
+//   return (
+//     <div className="app-container">
+//       {/* Khu vực hiển thị ảnh */}
+//       <ImageCanvas
+//         comments={comments}
+//         tempComment={tempComment}
+//         setTempComment={setTempComment}
+//         onAddComment={handleAddCommentFromCanvas}
+//         activeCommentId={activeCommentId}
+//         setActiveCommentId={setActiveCommentId}
+//       />
+
+//       {/* Bảng danh sách comment */}
+//       <CommentBox
+//         comments={comments}
+//         tempComment={tempComment}
+//         commentText={commentText}
+//         setCommentText={setCommentText}
+//         onAddComment={handleAddComment}
+//         onDeleteComment={handleDeleteComment}
+//         activeCommentId={activeCommentId}
+//         setActiveCommentId={setActiveCommentId}
+//       />
+//     </div>
+//   );
+// };
+
+// export default App;

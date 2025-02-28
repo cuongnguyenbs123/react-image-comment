@@ -1,8 +1,8 @@
 import React from "react";
-
+import { TempComment } from "./ImageCanvas";
 interface CommentBoxProps {
-  comments: any[];
-  tempComment: any;
+  comments: TempComment[];
+  tempComment: TempComment;
   commentText: string;
   setCommentText: (value: string) => void;
   onAddComment: () => void;
@@ -16,6 +16,9 @@ const CommentBox: React.FC<CommentBoxProps> = ({
   tempComment,
   commentText,
   setCommentText,
+
+
+  
   onAddComment,
   onDeleteComment,
   activeCommentId,

@@ -64,19 +64,6 @@ const App: React.FC = () => {
 
   const handleMouseUp = () => {
     setIsSelecting(false);
-  
-    // Nếu đang chọn vùng và có kích thước hợp lệ, lưu vào danh sách comments
-    if (isDragging && tempComment && tempComment.type === "selection" && tempComment.width && tempComment.height) {
-      // setComments((prev) => [
-      //   ...prev,
-      //   {
-      //     id: Date.now(),
-      //     ...tempComment,
-      //     text: "", // Chờ người dùng nhập nội dung
-      //   },
-      // ]);
-      // setTempComment(null);
-    }
   };
 
   // Khi bấm vào pin

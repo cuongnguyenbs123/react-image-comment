@@ -10,7 +10,7 @@ interface CommentListProps {
 
 const CommentList: React.FC<CommentListProps> = ({ comments, activeCommentId, onPinClick, onDeleteComment }) => {
   return (
-    <div className="comment-panel">
+    <>
       <h3>Danh sách Comment</h3>
       <ul>
         {comments.map((c) => (
@@ -27,7 +27,7 @@ const CommentList: React.FC<CommentListProps> = ({ comments, activeCommentId, on
           </li>
         ))}
       </ul>
-    </div>
+    </>
   );
 };
 

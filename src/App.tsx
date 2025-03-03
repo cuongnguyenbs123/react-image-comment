@@ -1,5 +1,8 @@
 import React, { useState, useRef } from "react";
 import "./App.css";
+import ImageArea from "./components/ImageArea";
+import CommentList from "./components/CommentList";
+import CommentForm from "./components/CommentForm";
 
 interface Comment {
   id: number;
@@ -31,7 +34,7 @@ const App: React.FC = () => {
     const rect = imageWrapperRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-
+    console.log(isDragging);
     setTempComment({ x, y, width: 0, height: 0, type: "pin" });
     setCommentText("");
   };
@@ -99,7 +102,7 @@ const App: React.FC = () => {
       }
       return comment;
     };
-    
+
     const newComment: Comment = {
       id: Date.now(),
       ...normalizeSelection(tempComment),
@@ -118,153 +121,33 @@ const App: React.FC = () => {
 
   return (
     <div className="app-container">
-      {/* Vùng hiển thị ảnh */}
-      <div
-        className="image-wrapper"
+      <ImageArea
         ref={imageWrapperRef}
+        comments={comments}
+        tempComment={tempComment}
+        imageSrc={"https://picsum.photos/600/400"}
+        onImageClick={handleImageClick}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onClick={handleImageClick}
-      >
-        <img
-          src="https://picsum.photos/600/400"
-          alt="Example"
-          className="main-image"
-        />
-
-        {/* Hiển thị các vùng chọn */}
-        {comments.map((c) =>
-          c.type === "selection" ? (
-            <div
-              key={c.id}
-              className="selection-box"
-              style={{
-                left: `${
-                  (c.x / (imageWrapperRef.current?.clientWidth ?? 1)) * 100
-                }%`,
-                top: `${
-                  (c.y / (imageWrapperRef.current?.clientHeight ?? 1)) * 100
-                }%`,
-                width: `${
-                  (c.width! / (imageWrapperRef.current?.clientWidth ?? 1)) * 100
-                }%`,
-                height: `${
-                  (c.height! / (imageWrapperRef.current?.clientHeight ?? 1)) *
-                  100
-                }%`,
-              }}
-              title={c.text}
-            />
-          ) : (
-            <div
-              key={c.id}
-              className={`pin ${activeCommentId === c.id ? "pin-active" : ""}`}
-              style={{
-                left: `${
-                  (c.x / (imageWrapperRef.current?.clientWidth ?? 1)) * 100
-                }%`,
-                top: `${
-                  (c.y / (imageWrapperRef.current?.clientHeight ?? 1)) * 100
-                }%`,
-              }}
-              title={c.text}
-              onClick={(e) => {
-                e.stopPropagation();
-                handlePinClick(c.id);
-              }}
-            >
-              <span>📍</span>
-            </div>
-          )
-        )}
-
-        {/* Hiển thị vùng chọn tạm thời */}
-        {tempComment?.type === "selection" && tempComment.width !== undefined && tempComment.height !== undefined && (
-          <div
-            className="selection-box temp"
-            style={{
-              left: `${
-                ((tempComment.width >= 0
-                  ? tempComment.x
-                  : tempComment.x + tempComment.width) /
-                  (imageWrapperRef.current?.clientWidth ?? 1)) *
-                100
-              }%`,
-              top: `${
-                ((tempComment.height >= 0
-                  ? tempComment.y
-                  : tempComment.y + tempComment.height) /
-                  (imageWrapperRef.current?.clientHeight ?? 1)) *
-                100
-              }%`,
-              width: `${
-                (Math.abs(tempComment.width) /
-                  (imageWrapperRef.current?.clientWidth ?? 1)) *
-                100
-              }%`,
-              height: `${
-                (Math.abs(tempComment.height) /
-                  (imageWrapperRef.current?.clientHeight ?? 1)) *
-                100
-              }%`,
-            }}
-          />
-        )}
-
-        {/* Hiển thị pin tạm thời */}
-        {tempComment?.type === "pin" && (
-          <div
-            className="pin pin-temp"
-            style={{
-              left: `${
-                (tempComment.x / (imageWrapperRef.current?.clientWidth ?? 1)) *
-                100
-              }%`,
-              top: `${
-                (tempComment.y / (imageWrapperRef.current?.clientHeight ?? 1)) *
-                100
-              }%`,
-            }}
-          >
-            <span>📍</span>
-          </div>
-        )}
-      </div>
+        onPinClick={handlePinClick}
+        activeCommentId={activeCommentId}
+      />
 
       {/* Panel danh sách comment */}
       <div className="comment-panel">
-        <h3>Danh sách Comment</h3>
-        <ul>
-          {comments.map((c) => (
-            <li
-              key={c.id}
-              className={activeCommentId === c.id ? "active-comment" : ""}
-              onClick={() => handlePinClick(c.id)}
-            >
-              <p>
-                <strong>Loại:</strong>{" "}
-                {c.type === "pin" ? "📍 Pin" : "🖼 Vùng chọn"}
-              </p>
-              <p>{c.text}</p>
-              <button onClick={() => handleDeleteComment(c.id)}>Xoá</button>
-            </li>
-          ))}
-        </ul>
-
+        <CommentList
+        comments={comments}
+        activeCommentId={activeCommentId}
+        onPinClick={handlePinClick}
+        onDeleteComment={handleDeleteComment} 
+        />
         {/* Form nhập comment nếu có pin/vùng chọn tạm thời */}
-        {tempComment && (
-          <div className="new-comment-form">
-            <h4>Thêm Comment Mới</h4>
-            <textarea
-              rows={3}
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Nhập nội dung comment..."
-            />
-            <button onClick={handleAddComment}>Lưu</button>
-          </div>
-        )}
+        <CommentForm
+          commentText={commentText}
+          setCommentText={setCommentText}
+          onAddComment={handleAddComment}
+        />
       </div>
     </div>
   );

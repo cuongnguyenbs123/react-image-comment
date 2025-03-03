@@ -62,6 +62,13 @@ const App: React.FC = () => {
     const currentX = e.clientX - rect.left;
     const currentY = e.clientY - rect.top;
 
+    const width = Math.abs(currentX - tempComment.x);
+    const height = Math.abs(currentY - tempComment.y);
+
+    if (width > 5 || height > 5) {
+      setIsDragging(true);
+    }
+
     setTempComment({
       ...tempComment,
       width: currentX - tempComment.x, // Cho phép giá trị âm
@@ -82,9 +89,20 @@ const App: React.FC = () => {
   const handleAddComment = () => {
     if (!tempComment || !commentText.trim()) return;
 
+    const normalizeSelection = (comment: Omit<Comment, "id" | "text">) => {
+      if (comment.type === "selection") {
+        const x = Math.min(comment.x, comment.x + comment.width!);
+        const y = Math.min(comment.y, comment.y + comment.height!);
+        const width = Math.abs(comment.width!);
+        const height = Math.abs(comment.height!);
+        return { ...comment, x, y, width, height };
+      }
+      return comment;
+    };
+    
     const newComment: Comment = {
       id: Date.now(),
-      ...tempComment,
+      ...normalizeSelection(tempComment),
       text: commentText,
     };
 

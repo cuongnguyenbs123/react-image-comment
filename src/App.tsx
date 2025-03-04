@@ -3,6 +3,7 @@ import "./App.css";
 import ImageArea from "./components/ImageArea";
 import CommentList from "./components/CommentList";
 import CommentForm from "./components/CommentForm";
+import { ResizeDirection } from "./types";
 
 interface Comment {
   id: number;
@@ -13,7 +14,6 @@ interface Comment {
   text: string;
   type: "pin" | "selection";
 }
-
 const App: React.FC = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [tempComment, setTempComment] = useState<Omit<
@@ -25,7 +25,8 @@ const App: React.FC = () => {
   const [activeCommentId, setActiveCommentId] = useState<number | null>(null);
   const [isSelecting, setIsSelecting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-
+  const [resizeDirection, setResizeDirection] = useState<ResizeDirection>(null);
+  const [isResizing, setIsResizing] = useState(false);
   // Khi người dùng click vào ảnh, tạo một pin tạm nếu không phải đang chọn vùng
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isDragging) return;
@@ -34,7 +35,6 @@ const App: React.FC = () => {
     const rect = imageWrapperRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    console.log(isDragging);
     setTempComment({ x, y, width: 0, height: 0, type: "pin" });
     setCommentText("");
   };
@@ -54,34 +54,93 @@ const App: React.FC = () => {
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (
-      !isSelecting ||
+      (!isSelecting && !isResizing) ||
       !tempComment ||
       !imageWrapperRef.current ||
       tempComment.type !== "selection"
     )
       return;
-
-    const rect = imageWrapperRef.current.getBoundingClientRect();
-    const currentX = e.clientX - rect.left;
-    const currentY = e.clientY - rect.top;
-
-    const width = Math.abs(currentX - tempComment.x);
-    const height = Math.abs(currentY - tempComment.y);
-
-    if (width > 5 || height > 5) {
-      setIsDragging(true);
+    if (isSelecting && tempComment?.type === "selection") {
+      const rect = imageWrapperRef.current.getBoundingClientRect();
+      const currentX = e.clientX - rect.left;
+      const currentY = e.clientY - rect.top;
+      const width = Math.abs(currentX - tempComment.x);
+      const height = Math.abs(currentY - tempComment.y);
+  
+      if (width > 5 || height > 5) {
+        setIsDragging(true);
+      }
+      setTempComment({
+        ...tempComment,
+        width: currentX - tempComment.x,
+        height: currentY - tempComment.y,
+      });
     }
+     else if (isResizing && tempComment?.type === "selection") {
+      // Xử lý resize
+      const rect = imageWrapperRef.current.getBoundingClientRect();
+      const currentX = e.clientX - rect.left;
+      const currentY = e.clientY - rect.top;
+      let newX = tempComment.x;
+      let newY = tempComment.y;
+      let newWidth = tempComment.width!;
+      let newHeight = tempComment.height!;
 
-    setTempComment({
-      ...tempComment,
-      width: currentX - tempComment.x, // Cho phép giá trị âm
-      height: currentY - tempComment.y, // Cho phép giá trị âm
-    });
+      switch (resizeDirection) {
+        case "top-left":
+          newX = currentX;
+          newY = currentY;
+          newWidth = tempComment.x + tempComment.width! - currentX;
+          newHeight = tempComment.y + tempComment.height! - currentY;
+          break;
+        case "top-right":
+          newY = currentY;
+          newWidth = currentX - tempComment.x;
+          newHeight = tempComment.y + tempComment.height! - currentY;
+          break;
+        case "bottom-left":
+          newX = currentX;
+          newWidth = tempComment.x + tempComment.width! - currentX;
+          newHeight = currentY - tempComment.y;
+          break;
+        case "bottom-right":
+          newWidth = currentX - tempComment.x;
+          newHeight = currentY - tempComment.y;
+          break;
+        case "left":
+          newX = currentX;
+          newWidth = tempComment.x + tempComment.width! - currentX;
+          break;
+        case "right":
+          newWidth = currentX - tempComment.x;
+          break;
+        case "top":
+          newY = currentY;
+          newHeight = tempComment.y + tempComment.height! - currentY;
+          break;
+        case "bottom":
+          newHeight = currentY - tempComment.y;
+          break;
+      }
+
+      setTempComment({ ...tempComment, x: newX, y: newY, width: newWidth, height: newHeight });
+    }
   };
-
   const handleMouseUp = () => {
     setIsSelecting(false);
+    setIsResizing(false);
   };
+  
+
+  const handleResizeStart = (direction: ResizeDirection, commentId?: number) => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setResizeDirection(direction);
+    setIsResizing(true);
+    if (commentId !== undefined) {
+      setActiveCommentId(commentId);
+    }
+  };
+  
 
   // Khi bấm vào pin
   const handlePinClick = (id: number) => {
@@ -119,6 +178,13 @@ const App: React.FC = () => {
     setComments(comments.filter((c) => c.id !== id));
   };
 
+  const handleAdjustComment = (id: number, newText: string) => {
+    setComments(
+      comments.map((c) => (c.id === id ? { ...c, text: newText } : c))
+    );
+    setCommentText("");
+  };
+
   return (
     <div className="app-container">
       <ImageArea
@@ -132,25 +198,32 @@ const App: React.FC = () => {
         onMouseUp={handleMouseUp}
         onPinClick={handlePinClick}
         activeCommentId={activeCommentId}
+        handleResizeStart={handleResizeStart}
+        setActiveCommentId={setActiveCommentId}
       />
 
       {/* Panel danh sách comment */}
       <div className="comment-panel">
         <CommentList
-        comments={comments}
-        activeCommentId={activeCommentId}
-        onPinClick={handlePinClick}
-        onDeleteComment={handleDeleteComment} 
+          comments={comments}
+          activeCommentId={activeCommentId}
+          onPinClick={handlePinClick}
+          onDeleteComment={handleDeleteComment}
+          onAdjustComment={handleAdjustComment}
+          setActiveCommentId={setActiveCommentId}
         />
         {/* Form nhập comment nếu có pin/vùng chọn tạm thời */}
-        <CommentForm
-          commentText={commentText}
-          setCommentText={setCommentText}
-          onAddComment={handleAddComment}
-        />
+        {tempComment && (
+          <CommentForm
+            commentText={commentText}
+            setCommentText={setCommentText}
+            onAddComment={handleAddComment}
+          />
+        )}
       </div>
     </div>
   );
 };
 
 export default App;
+

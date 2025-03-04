@@ -1,5 +1,6 @@
 import React, { forwardRef } from "react";
 import { Comment } from "../types";
+import { ResizeDirection } from "../types";
 
 interface ImageAreaProps {
   comments: Comment[];
@@ -11,6 +12,8 @@ interface ImageAreaProps {
   onMouseUp: () => void;
   onPinClick: (id: number) => void;
   activeCommentId: number | null;
+  handleResizeStart: (direction: ResizeDirection) => (e: React.MouseEvent) => void;
+  setActiveCommentId: (id: number | null) => void
 }
 
 // Sử dụng forwardRef để component cha có thể truy cập ref của ImageArea
@@ -26,6 +29,8 @@ const ImageArea = forwardRef<HTMLDivElement, ImageAreaProps>(
       onMouseUp,
       onPinClick,
       activeCommentId,
+      handleResizeStart,
+      setActiveCommentId
     },
     ref
   ) => {
@@ -46,6 +51,12 @@ const ImageArea = forwardRef<HTMLDivElement, ImageAreaProps>(
             <div
               key={c.id}
               className="selection-box"
+              onClick={
+               (e) => {
+                e.stopPropagation();
+                setActiveCommentId(c.id)
+               }
+              }
               style={{
                 left: `${
                   (c.x /
@@ -73,7 +84,23 @@ const ImageArea = forwardRef<HTMLDivElement, ImageAreaProps>(
                 }%`,
               }}
               title={c.text}
-            />
+            >
+              {
+                activeCommentId === c.id && (
+                  <>
+                  <div className="resize-handle top-left" onMouseDown={handleResizeStart("top-left")} />
+                  <div className="resize-handle top-right" onMouseDown={handleResizeStart("top-right")} />
+                  <div className="resize-handle bottom-left" onMouseDown={handleResizeStart("bottom-left")} />
+                  <div className="resize-handle bottom-right" onMouseDown={handleResizeStart("bottom-right")} />
+                  <div className="resize-handle left" onMouseDown={handleResizeStart("left")} />
+                  <div className="resize-handle right" onMouseDown={handleResizeStart("right")} />
+                  <div className="resize-handle top" onMouseDown={handleResizeStart("top")} />
+                  <div className="resize-handle bottom" onMouseDown={handleResizeStart("bottom")} />
+                  </>
+                )
+                  
+              }
+              </div>
           ) : (
             <div
               key={c.id}
@@ -139,7 +166,17 @@ const ImageArea = forwardRef<HTMLDivElement, ImageAreaProps>(
                   100
                 }%`,
               }}
-            />
+            >
+                 {/* Các điểm resize */}
+            <div className="resize-handle top-left" onMouseDown={handleResizeStart("top-left")} />
+            <div className="resize-handle top-right" onMouseDown={handleResizeStart("top-right")} />
+            <div className="resize-handle bottom-left" onMouseDown={handleResizeStart("bottom-left")} />
+            <div className="resize-handle bottom-right" onMouseDown={handleResizeStart("bottom-right")} />
+            <div className="resize-handle left" onMouseDown={handleResizeStart("left")} />
+            <div className="resize-handle right" onMouseDown={handleResizeStart("right")} />
+            <div className="resize-handle top" onMouseDown={handleResizeStart("top")} />
+            <div className="resize-handle bottom" onMouseDown={handleResizeStart("bottom")} />
+            </div>
           )}
 
         {/* Hiển thị pin tạm thời */}

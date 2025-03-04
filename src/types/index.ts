@@ -8,3 +8,5 @@ export interface Comment {
     type: "pin" | "selection";
   }
   
+export type ResizeDirection = "top-left" | "top-right" | "bottom-left" | "bottom-right" | "left" | "right" | "top" | "bottom" | null;
+  

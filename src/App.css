@@ -194,3 +194,65 @@
 }
 
 
+.w-full{
+  width: 100%;
+}
+
+textarea {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  transition: all 0.3s ease-in-out;
+  outline: none;
+  resize: vertical;
+}
+
+textarea:focus {
+  border-color: #007bff;
+  background-color: #fff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+textarea::placeholder {
+  color: #aaa;
+}
+
+.active-comment textarea {
+  border-color: #ff9800;
+  background-color: #fffaf0;
+}
+
+button {
+  margin-top: 5px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: white;
+  border: 1px solid black;
+}
+
+.top-left { top: -5px; left: -5px; cursor: nwse-resize; }
+.top-right { top: -5px; right: -5px; cursor: nesw-resize; }
+.bottom-left { bottom: -5px; left: -5px; cursor: nesw-resize; }
+.bottom-right { bottom: -5px; right: -5px; cursor: nwse-resize; }
+.left { top: 50%; left: -5px; cursor: ew-resize; transform: translateY(-50%); }
+.right { top: 50%; right: -5px; cursor: ew-resize; transform: translateY(-50%); }
+.top { top: -5px; left: 50%; cursor: ns-resize; transform: translateX(-50%); }
+.bottom { bottom: -5px; left: 50%; cursor: ns-resize; transform: translateX(-50%); }

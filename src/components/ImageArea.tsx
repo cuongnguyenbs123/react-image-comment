@@ -49,7 +49,7 @@ const ImageArea = forwardRef<HTMLDivElement, ImageAreaProps>(
 
           {/* Hiển thị các vùng chọn */}
           {comments.map((c) =>
-            c.type === "selection" ? (
+            c.type === "selection" && c.width && c.height ? (
               <div
                 key={c.id}
                 className="selection-box"
@@ -59,25 +59,29 @@ const ImageArea = forwardRef<HTMLDivElement, ImageAreaProps>(
                 }}
                 style={{
                   left: `${
-                    (c.x /
+                    ((c.width >= 0
+                      ? c.x
+                      : c.x + c.width) /
                       ((ref as React.RefObject<HTMLDivElement>)?.current
                         ?.clientWidth ?? 1)) *
                     100
                   }%`,
                   top: `${
-                    (c.y /
+                    ((c.height >= 0
+                      ? c.y
+                      : c.y + c.height) /
                       ((ref as React.RefObject<HTMLDivElement>)?.current
                         ?.clientHeight ?? 1)) *
                     100
                   }%`,
                   width: `${
-                    (c.width! /
+                    (Math.abs(c.width) /
                       ((ref as React.RefObject<HTMLDivElement>)?.current
                         ?.clientWidth ?? 1)) *
                     100
                   }%`,
                   height: `${
-                    (c.height! /
+                    (Math.abs(c.height) /
                       ((ref as React.RefObject<HTMLDivElement>)?.current
                         ?.clientHeight ?? 1)) *
                     100

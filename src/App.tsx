@@ -49,7 +49,7 @@ const App: React.FC = () => {
     const y = e.clientY - rect.top;
 
     setTempComment({ x, y, type: "selection" });
-
+    setActiveCommentId(null);
     setIsSelecting(true);
     setIsDragging(false);
   };
@@ -62,7 +62,7 @@ const App: React.FC = () => {
       tempComment.type !== "selection"
     )
       return;
-    const rect = imageWrapperRef.current.getBoundingClientRect();
+      const rect = imageWrapperRef.current.getBoundingClientRect();
     const currentX = e.clientX - rect.left;
     const currentY = e.clientY - rect.top;
 
@@ -83,12 +83,12 @@ const App: React.FC = () => {
         setComments((prevComments) =>
           prevComments.map((comment) => {
             if (comment.id !== activeCommentId) return comment;
-
+    
             let newX = comment.x;
             let newY = comment.y;
             let newWidth = comment.width!;
             let newHeight = comment.height!;
-
+    
             switch (resizeDirection) {
               case "top-left":
                 newX = currentX;
@@ -135,11 +135,8 @@ const App: React.FC = () => {
             };
           })
         );
-      } else if (tempComment?.type === "selection") {
+      } else {
         // Xử lý resize cho temp
-        const rect = imageWrapperRef.current.getBoundingClientRect();
-        const currentX = e.clientX - rect.left;
-        const currentY = e.clientY - rect.top;
         let newX = tempComment.x;
         let newY = tempComment.y;
         let newWidth = tempComment.width!;
@@ -212,21 +209,20 @@ const App: React.FC = () => {
     setActiveCommentId(id);
   };
 
+  const normalizeSelection = (comment: Omit<Comment, "id" | "text">) => {
+    if (comment.type === "selection") {
+      const x = Math.min(comment.x, comment.x + comment.width!);
+      const y = Math.min(comment.y, comment.y + comment.height!);
+      const width = Math.abs(comment.width!);
+      const height = Math.abs(comment.height!);
+      return { ...comment, x, y, width, height };
+    }
+    return comment;
+  };
+
   // Lưu comment mới
   const handleAddComment = () => {
     if (!tempComment || !commentText.trim()) return;
-
-    const normalizeSelection = (comment: Omit<Comment, "id" | "text">) => {
-      if (comment.type === "selection") {
-        const x = Math.min(comment.x, comment.x + comment.width!);
-        const y = Math.min(comment.y, comment.y + comment.height!);
-        const width = Math.abs(comment.width!);
-        const height = Math.abs(comment.height!);
-        return { ...comment, x, y, width, height };
-      }
-      return comment;
-    };
-
     const newComment: Comment = {
       id: Date.now(),
       ...normalizeSelection(tempComment),

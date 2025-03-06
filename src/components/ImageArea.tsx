@@ -1,7 +1,7 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useRef, useEffect } from "react";
 import { Comment } from "../types";
 import { ResizeDirection } from "../types";
-
+import DraggableComponent from "../utils/Dragable";
 interface ImageAreaProps {
   comments: Comment[];
   tempComment: Omit<Comment, "id" | "text"> | null;
@@ -36,6 +36,23 @@ const ImageArea = forwardRef<HTMLDivElement, ImageAreaProps>(
     },
     ref
   ) => {
+    const draggableRefs = useRef<{ [key: number]: DraggableComponent }>({});
+
+    useEffect(() => {
+      comments.forEach((c) => {
+        if (c.type === "selection" && !draggableRefs.current[c.id]) {
+          const el = document.getElementById(`selection-${c.id}`);
+          if (el) {
+            draggableRefs.current[c.id] = new DraggableComponent(el.id);
+          }
+        }
+      });
+      return () => {
+        Object.values(draggableRefs.current).forEach((draggable) =>
+          draggable.destroy()
+        );
+      };
+    }, [comments]);
     return (
       <div
         className="image-wrapper"
@@ -45,7 +62,7 @@ const ImageArea = forwardRef<HTMLDivElement, ImageAreaProps>(
         onMouseUp={onMouseUp}
       >
         <div onClick={onImageClick}>
-          <img src={imageSrc} alt="Example" className="main-image" />
+          <img src={imageSrc} alt="Example" className="main-image"  />
 
           {/* Hiển thị các vùng chọn */}
           {comments.map((c) =>
@@ -53,6 +70,7 @@ const ImageArea = forwardRef<HTMLDivElement, ImageAreaProps>(
               <div
                 key={c.id}
                 className="selection-box"
+                id={`selection-${c.id}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveCommentId(c.id);
@@ -91,6 +109,18 @@ const ImageArea = forwardRef<HTMLDivElement, ImageAreaProps>(
               >
                 {activeCommentId === c.id && (
                   <>
+                   <div className="crosshair" 
+                   onMouseDown={
+                    (e) => {
+                      e.stopPropagation();
+                    }
+                   }
+                   onMouseUp={
+                    (e) => {
+                      e.stopPropagation();
+                    }
+                   }
+                   />
                     <div
                       className="resize-handle top-left"
                       onMouseDown={handleResizeStart("top-left")}

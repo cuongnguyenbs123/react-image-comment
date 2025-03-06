@@ -62,7 +62,7 @@ const App: React.FC = () => {
       tempComment.type !== "selection"
     )
       return;
-      const rect = imageWrapperRef.current.getBoundingClientRect();
+    const rect = imageWrapperRef.current.getBoundingClientRect();
     const currentX = e.clientX - rect.left;
     const currentY = e.clientY - rect.top;
 
@@ -187,23 +187,20 @@ const App: React.FC = () => {
         });
       }
     }
+   
   };
   const handleMouseUp = () => {
     setIsSelecting(false);
     setIsResizing(false);
   };
-
-  const handleResizeStart =
-    (direction: ResizeDirection, commentId?: number) =>
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      setResizeDirection(direction);
-      setIsResizing(true);
-      if (commentId !== undefined) {
-        setActiveCommentId(commentId);
-      }
-    };
-
+  const handleResizeStart =(direction: ResizeDirection, commentId?: number) =>(e: React.MouseEvent) => {
+    e.stopPropagation();
+    setResizeDirection(direction);
+    setIsResizing(true);
+    if (commentId !== undefined) {
+      setActiveCommentId(commentId);
+    }
+  };
   // Khi bấm vào pin
   const handlePinClick = (id: number) => {
     setActiveCommentId(id);

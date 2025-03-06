@@ -1,3 +1,5 @@
+import DraggableComponent from "../utils/Dragable";
+
 export interface Comment {
     id: number;
     x: number;
@@ -6,6 +8,7 @@ export interface Comment {
     height?: number;
     text: string;
     type: "pin" | "selection";
+    draggable?: DraggableComponent
   }
   
 export type ResizeDirection = "top-left" | "top-right" | "bottom-left" | "bottom-right" | "left" | "right" | "top" | "bottom" | null;

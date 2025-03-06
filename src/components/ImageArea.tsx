@@ -32,7 +32,7 @@ const ImageArea = forwardRef<HTMLDivElement, ImageAreaProps>(
       onPinClick,
       activeCommentId,
       handleResizeStart,
-      setActiveCommentId,
+      setActiveCommentId
     },
     ref
   ) => {
@@ -47,11 +47,6 @@ const ImageArea = forwardRef<HTMLDivElement, ImageAreaProps>(
           }
         }
       });
-      return () => {
-        Object.values(draggableRefs.current).forEach((draggable) =>
-          draggable.destroy()
-        );
-      };
     }, [comments]);
     return (
       <div
@@ -113,11 +108,14 @@ const ImageArea = forwardRef<HTMLDivElement, ImageAreaProps>(
                    onMouseDown={
                     (e) => {
                       e.stopPropagation();
+                      draggableRefs.current[c.id] = new DraggableComponent(`selection-${c.id}`);
                     }
                    }
                    onMouseUp={
                     (e) => {
                       e.stopPropagation();
+                      draggableRefs.current[c.id].destroy();
+                      
                     }
                    }
                    />

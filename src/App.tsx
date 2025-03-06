@@ -16,28 +16,47 @@ interface Comment {
 }
 const App: React.FC = () => {
   const [comments, setComments] = useState<Comment[]>([]);
-  const [tempComment, setTempComment] = useState<Omit<
-    Comment,
-    "id" | "text"
-  > | null>(null);
-  const [commentText, setCommentText] = useState<string>("");
   const imageWrapperRef = useRef<HTMLDivElement | null>(null);
-  const [activeCommentId, setActiveCommentId] = useState<number | null>(null);
-  const [isSelecting, setIsSelecting] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [resizeDirection, setResizeDirection] = useState<ResizeDirection>(null);
-  const [isResizing, setIsResizing] = useState(false);
-  // const [isEditing, setIsEditing] = useState<EditType | null>(null);
+
+  const [interactionState, setInteractionState] = useState({
+    tempComment: null as Omit<Comment, "id"> | null,
+    activeCommentId: null as number | null,
+    isSelecting: false,
+    isDragging: false,
+    isResizing: false,
+    isMoving: false,
+    resizeDirection: null as ResizeDirection | null,
+  });
+  const {
+    tempComment,
+    activeCommentId,
+    isSelecting,
+    isDragging,
+    isResizing,
+    resizeDirection,
+  } = interactionState;
+  const updateInteractionState = (
+    updates: Partial<typeof interactionState>
+  ) => {
+    setInteractionState((prev) => ({ ...prev, ...updates }));
+  };
+
   // Khi người dùng click vào ảnh, tạo một pin tạm nếu không phải đang chọn vùng
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isDragging) return;
     if (!imageWrapperRef.current || isSelecting) return;
 
     const rect = imageWrapperRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setTempComment({ x, y, width: 0, height: 0, type: "pin" });
-    setCommentText("");
+    updateInteractionState({
+      tempComment: {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+        width: 0,
+        height: 0,
+        type: "pin",
+        text: ""
+      },
+    });
   };
 
   // Khi bắt đầu chọn vùng
@@ -47,11 +66,12 @@ const App: React.FC = () => {
     const rect = imageWrapperRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-
-    setTempComment({ x, y, type: "selection" });
-    setActiveCommentId(null);
-    setIsSelecting(true);
-    setIsDragging(false);
+    updateInteractionState({
+      isDragging: false,
+      isSelecting: true,
+      activeCommentId: null,
+      tempComment: { x, y, type: "selection", text: "" },
+    });
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -69,26 +89,23 @@ const App: React.FC = () => {
     if (isSelecting && tempComment?.type === "selection") {
       const width = Math.abs(currentX - tempComment.x);
       const height = Math.abs(currentY - tempComment.y);
-
-      if (width > 5 || height > 5) {
-        setIsDragging(true);
-      }
-      setTempComment({
-        ...tempComment,
-        width: currentX - tempComment.x,
-        height: currentY - tempComment.y,
+      updateInteractionState({
+        tempComment: {
+          ...tempComment,
+          width: currentX - tempComment.x,
+          height: currentY - tempComment.y,
+        },
+        isDragging: width > 5 || height > 5 ? true : false,
       });
-    } else if (isResizing && tempComment?.type === "selection") {
+    } else if (isResizing) {
       if (activeCommentId) {
         setComments((prevComments) =>
           prevComments.map((comment) => {
             if (comment.id !== activeCommentId) return comment;
-    
             let newX = comment.x;
             let newY = comment.y;
             let newWidth = comment.width!;
             let newHeight = comment.height!;
-    
             switch (resizeDirection) {
               case "top-left":
                 newX = currentX;
@@ -141,7 +158,6 @@ const App: React.FC = () => {
         let newY = tempComment.y;
         let newWidth = tempComment.width!;
         let newHeight = tempComment.height!;
-
         switch (resizeDirection) {
           case "top-left":
             newX = currentX;
@@ -178,35 +194,45 @@ const App: React.FC = () => {
             newHeight = currentY - tempComment.y;
             break;
         }
-        setTempComment({
-          ...tempComment,
-          x: newX,
-          y: newY,
-          width: newWidth,
-          height: newHeight,
+        updateInteractionState({
+          tempComment: {
+            ...tempComment,
+            x: newX,
+            y: newY,
+            width: newWidth,
+            height: newHeight,
+          },
         });
       }
     }
-   
-  };
-  const handleMouseUp = () => {
-    setIsSelecting(false);
-    setIsResizing(false);
-  };
-  const handleResizeStart =(direction: ResizeDirection, commentId?: number) =>(e: React.MouseEvent) => {
-    e.stopPropagation();
-    setResizeDirection(direction);
-    setIsResizing(true);
-    if (commentId !== undefined) {
-      setActiveCommentId(commentId);
-    }
-  };
-  // Khi bấm vào pin
-  const handlePinClick = (id: number) => {
-    setActiveCommentId(id);
   };
 
-  const normalizeSelection = (comment: Omit<Comment, "id" | "text">) => {
+  const handleMouseUp = () => {
+    if (!tempComment) return;
+    updateInteractionState({
+      isResizing: false,
+      isSelecting: false,
+    });
+  };
+  const handleResizeStart =
+    (direction: ResizeDirection, commentId?: number) =>
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      updateInteractionState({
+        isResizing: true,
+        resizeDirection: direction,
+        activeCommentId: commentId ? commentId : activeCommentId,
+      });
+    };
+  // Khi bấm vào pin
+  const handlePinClick = (id: number) => {
+    setInteractionState((prev) => ({ ...prev, activeCommentId: id }));
+    updateInteractionState({
+      activeCommentId: id,
+    });
+  };
+
+  const normalizeSelection = (comment: Omit<Comment, "id">) => {
     if (comment.type === "selection") {
       const x = Math.min(comment.x, comment.x + comment.width!);
       const y = Math.min(comment.y, comment.y + comment.height!);
@@ -219,16 +245,16 @@ const App: React.FC = () => {
 
   // Lưu comment mới
   const handleAddComment = () => {
-    if (!tempComment || !commentText.trim()) return;
+    if (!tempComment || tempComment.text.trim() === "") return;
     const newComment: Comment = {
       id: Date.now(),
       ...normalizeSelection(tempComment),
-      text: commentText,
     };
 
     setComments([...comments, newComment]);
-    setTempComment(null);
-    setCommentText("");
+    updateInteractionState({
+      tempComment: null,
+    });
   };
 
   // Xoá comment
@@ -240,9 +266,7 @@ const App: React.FC = () => {
     setComments(
       comments.map((c) => (c.id === id ? { ...c, text: newText } : c))
     );
-    setCommentText("");
   };
-
   return (
     <div className="app-container">
       <ImageArea
@@ -257,7 +281,9 @@ const App: React.FC = () => {
         onPinClick={handlePinClick}
         activeCommentId={activeCommentId}
         handleResizeStart={handleResizeStart}
-        setActiveCommentId={setActiveCommentId}
+        setActiveCommentId={(id: number | null) =>
+          updateInteractionState({ activeCommentId: id })
+        }
       />
 
       {/* Panel danh sách comment */}
@@ -268,13 +294,15 @@ const App: React.FC = () => {
           onPinClick={handlePinClick}
           onDeleteComment={handleDeleteComment}
           onAdjustComment={handleAdjustComment}
-          setActiveCommentId={setActiveCommentId}
+          setActiveCommentId={(id: number | null) =>
+            updateInteractionState({ activeCommentId: id })
+          }
         />
         {/* Form nhập comment nếu có pin/vùng chọn tạm thời */}
         {tempComment && (
           <CommentForm
-            commentText={commentText}
-            setCommentText={setCommentText}
+            commentText={tempComment.text}
+            setCommentText={(text: string)=> updateInteractionState({ tempComment: { ...tempComment, text } })}
             onAddComment={handleAddComment}
           />
         )}

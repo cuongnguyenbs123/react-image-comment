@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, ReactNode } from "react";
 import { ResizeDirection } from "../types";
 
 interface Comment {
@@ -12,7 +12,7 @@ interface Comment {
 }
 
 interface InteractionState {
-  tempComment: Omit<Comment, "id" | "text"> | null;
+  tempComment: Omit<Comment, "id"> | null;
   activeCommentId: number | null;
   isSelecting: boolean;
   isDragging: boolean;
@@ -25,18 +25,14 @@ interface CommentContextType {
   interactionState: InteractionState;
   setComments: React.Dispatch<React.SetStateAction<Comment[]>>;
   updateInteractionState: (updates: Partial<InteractionState>) => void;
-  addComment: (text: string) => void;
-  deleteComment: (id: number) => void;
-  adjustComment: (id: number, newText: string) => void;
+  handleAddComment: () => void;
+  handleDeleteComment: (id: number) => void;
+  handleAdjustComment: (id: number, newText: string) => void;
 }
 
-const CommentContext = createContext<CommentContextType | undefined>(
-  undefined
-);
+const CommentContext = createContext<CommentContextType | undefined>(undefined);
 
-export const CommentProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const CommentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [interactionState, setInteractionState] = useState<InteractionState>({
     tempComment: null,
@@ -51,24 +47,33 @@ export const CommentProvider: React.FC<{ children: React.ReactNode }> = ({
     setInteractionState((prev) => ({ ...prev, ...updates }));
   };
 
-  const addComment = (text: string) => {
-    if (!interactionState.tempComment || !text.trim()) return;
-    setComments([
-      ...comments,
-      {
-        id: Date.now(),
-        ...interactionState.tempComment,
-        text,
-      },
-    ]);
+  const normalizeSelection = (comment: Omit<Comment, "id">) => {
+    if (comment.type === "selection") {
+      const x = Math.min(comment.x, comment.x + (comment.width || 0));
+      const y = Math.min(comment.y, comment.y + (comment.height || 0));
+      const width = Math.abs(comment.width || 0);
+      const height = Math.abs(comment.height || 0);
+      return { ...comment, x, y, width, height };
+    }
+    return comment;
+  };
+
+  const handleAddComment = () => {
+    if (!interactionState.tempComment || interactionState.tempComment.text.trim() === "") return;
+    const newComment: Comment = {
+      id: Date.now(),
+      ...normalizeSelection(interactionState.tempComment),
+    };
+
+    setComments([...comments, newComment]);
     updateInteractionState({ tempComment: null });
   };
 
-  const deleteComment = (id: number) => {
+  const handleDeleteComment = (id: number) => {
     setComments(comments.filter((c) => c.id !== id));
   };
 
-  const adjustComment = (id: number, newText: string) => {
+  const handleAdjustComment = (id: number, newText: string) => {
     setComments(comments.map((c) => (c.id === id ? { ...c, text: newText } : c)));
   };
 
@@ -79,9 +84,9 @@ export const CommentProvider: React.FC<{ children: React.ReactNode }> = ({
         interactionState,
         setComments,
         updateInteractionState,
-        addComment,
-        deleteComment,
-        adjustComment
+        handleAddComment,
+        handleDeleteComment,
+        handleAdjustComment,
       }}
     >
       {children}
@@ -90,7 +95,7 @@ export const CommentProvider: React.FC<{ children: React.ReactNode }> = ({
 };
 
 export const useCommentContext = () => {
-  const context = useContext(CommentContext);
+  const context = React.useContext(CommentContext);
   if (!context) {
     throw new Error("useCommentContext must be used within a CommentProvider");
   }
